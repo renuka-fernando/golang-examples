@@ -27,5 +27,20 @@ func main() {
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
-	fmt.Println(string(body), resp.Header, resp.StatusCode, resp.Status, err)
+
+	jwt := &struct {
+		token string
+	}{}
+	_ = json.Unmarshal(body, jwt)
+
+	fmt.Println(jwt, resp.Header, resp.StatusCode, resp.Status, err)
+
+	client := &http.Client{}
+	request, err := http.NewRequest("GET", "https://hub.docker.com/v2/repositories/{USERNAME}", nil)
+	request.Header.Set("Authorization", "JWT "+jwt.token)
+	res, _ := client.Do(request)
+	defer res.Body.Close()
+	body2, err := ioutil.ReadAll(res.Body)
+	fmt.Println(string(body2))
+
 }
